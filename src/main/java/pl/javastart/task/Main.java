@@ -31,8 +31,8 @@ public class Main {
                     DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(availablePatternWithoutTime);
                     TemporalAccessor parse = dateTimeFormatter.parse(userInput);
                     LocalDate localDate = LocalDate.from(parse);
-                    ZoneId warsaw = ZoneId.of("Europe/Warsaw");
-                    ZonedDateTime userDateZoned = localDate.atStartOfDay(warsaw);
+                    ZoneId localDateZone = ZoneId.systemDefault();
+                    ZonedDateTime userDateZoned = localDate.atStartOfDay(localDateZone);
 
                     printDifferentTimeZones(userDateZoned);
                     return;
@@ -46,8 +46,8 @@ public class Main {
                     DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(availablePattern);
                     TemporalAccessor parse = dateTimeFormatter.parse(userInput);
                     LocalDateTime userDate = LocalDateTime.from(parse);
-                    ZoneId warsaw = ZoneId.of("Europe/Warsaw");
-                    ZonedDateTime userDateZoned = userDate.atZone(warsaw);
+                    ZoneId localDateZone = ZoneId.systemDefault();
+                    ZonedDateTime userDateZoned = userDate.atZone(localDateZone);
 
                     printDifferentTimeZones(userDateZoned);
                     added = true;
@@ -64,28 +64,20 @@ public class Main {
     }
 
     private static void printDifferentTimeZones(ZonedDateTime userDateZoned) {
-        ZoneId utc = ZoneId.of("Etc/UTC");
-        ZoneId london = ZoneId.of("Europe/London");
-        ZoneId losAngeles = ZoneId.of("America/Los_Angeles");
-        ZoneId sydney = ZoneId.of("Australia/Sydney");
-
-        ZonedDateTime utcDateTime = userDateZoned.withZoneSameInstant(utc);
-        ZonedDateTime londonDateTime = userDateZoned.withZoneSameInstant(london);
-        ZonedDateTime losAngelesDateTime = userDateZoned.withZoneSameInstant(losAngeles);
-        ZonedDateTime sydneyDateTime = userDateZoned.withZoneSameInstant(sydney);
-
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-
         String userDateOutput = userDateZoned.format(formatter);
-        String utcOutput = utcDateTime.format(formatter);
-        String londonOutput = londonDateTime.format(formatter);
-        String losAngelesOutput = losAngelesDateTime.format(formatter);
-        String sydneyOutput = sydneyDateTime.format(formatter);
 
         System.out.println("Czas lokalny: " + userDateOutput);
-        System.out.println("UTC: " + utcOutput);
-        System.out.println("Londyn: " + londonOutput);
-        System.out.println("Los Angeles: " + losAngelesOutput);
-        System.out.println("Sydney: " + sydneyOutput);
+        System.out.println("UTC: " + calculateTimeZone(userDateZoned, "Etc/UTC"));
+        System.out.println("Londyn: " + calculateTimeZone(userDateZoned, "Europe/London"));
+        System.out.println("Los Angeles: " + calculateTimeZone(userDateZoned, "America/Los_Angeles"));
+        System.out.println("Sydney: " + calculateTimeZone(userDateZoned, "Australia/Sydney"));
+    }
+
+    private static String calculateTimeZone(ZonedDateTime userDateZoned, String timeZoneCode) {
+        ZoneId userTimeZone = ZoneId.of(timeZoneCode);
+        ZonedDateTime userTimeZoneDateTime = userDateZoned.withZoneSameInstant(userTimeZone);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        return userTimeZoneDateTime.format(formatter);
     }
 }
