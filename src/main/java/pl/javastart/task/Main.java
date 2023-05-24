@@ -19,48 +19,51 @@ public class Main {
     }
 
     public void run(Scanner scanner) {
-        boolean added = false;
-        while (!added) {
+        ZonedDateTime userDateZoned = null;
+        while (userDateZoned == null) {
             List<String> availablePatternsWithTime = Arrays.asList("yyyy-MM-dd HH:mm:ss", "dd.MM.yyyy HH:mm:ss");
-            List<String> availablePatternsWithoutTime = Arrays.asList("yyyy-MM-dd");
+            String availablePatternWithoutTime = "yyyy-MM-dd";
             System.out.println("Podaj datę: ");
             String userInput = scanner.nextLine();
+            try {
+                userDateZoned = getLocalizedDate(availablePatternWithoutTime, userInput);
 
-            for (String availablePatternWithoutTime : availablePatternsWithoutTime) {
-                try {
-                    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(availablePatternWithoutTime);
-                    TemporalAccessor parse = dateTimeFormatter.parse(userInput);
-                    LocalDate localDate = LocalDate.from(parse);
-                    ZoneId localDateZone = ZoneId.systemDefault();
-                    ZonedDateTime userDateZoned = localDate.atStartOfDay(localDateZone);
-
-                    printDifferentTimeZones(userDateZoned);
-                    return;
-                } catch (DateTimeParseException ex) {
-
-                }
-            }
-
-            for (String availablePattern : availablePatternsWithTime) {
-                try {
-                    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(availablePattern);
-                    TemporalAccessor parse = dateTimeFormatter.parse(userInput);
-                    LocalDateTime userDate = LocalDateTime.from(parse);
-                    ZoneId localDateZone = ZoneId.systemDefault();
-                    ZonedDateTime userDateZoned = userDate.atZone(localDateZone);
-
-                    printDifferentTimeZones(userDateZoned);
-                    added = true;
-                    break;
-                } catch (DateTimeParseException ex) {
-
-                }
+            } catch (DateTimeParseException ex) {
 
             }
-            if (!added) {
+
+            if (userDateZoned == null) {
+                for (String availablePattern : availablePatternsWithTime) {
+                    try {
+                        userDateZoned = getLocalizedDataTime(availablePattern, userInput);
+
+                    } catch (DateTimeParseException ex) {
+
+                    }
+                }
+            }
+            if (userDateZoned == null) {
                 System.out.println("Wprowadzono datę w złym formacie. Spróbuj raz jeszcze.");
+            } else {
+                printDifferentTimeZones(userDateZoned);
             }
         }
+    }
+
+    private static ZonedDateTime getLocalizedDataTime(String availablePattern, String userInput) {
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(availablePattern);
+        TemporalAccessor parse = dateTimeFormatter.parse(userInput);
+        LocalDateTime userDate = LocalDateTime.from(parse);
+        ZoneId localDateZone = ZoneId.systemDefault();
+        return userDate.atZone(localDateZone);
+    }
+
+    private static ZonedDateTime getLocalizedDate(String availablePatternWithoutTime, String userInput) {
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(availablePatternWithoutTime);
+        TemporalAccessor parse = dateTimeFormatter.parse(userInput);
+        LocalDate localDate = LocalDate.from(parse);
+        ZoneId localDateZone = ZoneId.systemDefault();
+        return localDate.atStartOfDay(localDateZone);
     }
 
     private static void printDifferentTimeZones(ZonedDateTime userDateZoned) {
