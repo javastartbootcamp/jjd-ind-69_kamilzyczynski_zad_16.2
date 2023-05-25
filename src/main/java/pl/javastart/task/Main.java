@@ -21,26 +21,19 @@ public class Main {
     public void run(Scanner scanner) {
         ZonedDateTime userDateZoned = null;
         while (userDateZoned == null) {
-            List<String> availablePatternsWithTime = Arrays.asList("yyyy-MM-dd HH:mm:ss", "dd.MM.yyyy HH:mm:ss");
-            String availablePatternWithoutTime = "yyyy-MM-dd";
             System.out.println("Podaj datę: ");
             String userInput = scanner.nextLine();
             try {
-                userDateZoned = getLocalizedDate(availablePatternWithoutTime, userInput);
+                userDateZoned = getLocalizedDate(userInput);
 
             } catch (DateTimeParseException ex) {
-
             }
 
             if (userDateZoned == null) {
-                for (String availablePattern : availablePatternsWithTime) {
-                    try {
-                        userDateZoned = getLocalizedDataTime(availablePattern, userInput);
+                try {
+                    userDateZoned = getLocalizedDataTime(userInput);
 
-                    } catch (DateTimeParseException ex) {
-
-                    }
-                }
+                } catch (DateTimeParseException ex) { }
             }
             if (userDateZoned == null) {
                 System.out.println("Wprowadzono datę w złym formacie. Spróbuj raz jeszcze.");
@@ -50,15 +43,24 @@ public class Main {
         }
     }
 
-    private static ZonedDateTime getLocalizedDataTime(String availablePattern, String userInput) {
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(availablePattern);
-        TemporalAccessor parse = dateTimeFormatter.parse(userInput);
-        LocalDateTime userDate = LocalDateTime.from(parse);
+    private static ZonedDateTime getLocalizedDataTime(String userInput) {
+        List<String> availablePatternsWithTime = Arrays.asList("yyyy-MM-dd HH:mm:ss", "dd.MM.yyyy HH:mm:ss");
         ZoneId localDateZone = ZoneId.systemDefault();
+        LocalDateTime userDate = null;
+        for (String availablePattern : availablePatternsWithTime) {
+            try {
+                DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(availablePattern);
+                TemporalAccessor parse = dateTimeFormatter.parse(userInput);
+                userDate = LocalDateTime.from(parse);
+                break;
+            } catch (DateTimeParseException ex) {
+            }
+        }
         return userDate.atZone(localDateZone);
     }
 
-    private static ZonedDateTime getLocalizedDate(String availablePatternWithoutTime, String userInput) {
+    private static ZonedDateTime getLocalizedDate(String userInput) {
+        String availablePatternWithoutTime = "yyyy-MM-dd";
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(availablePatternWithoutTime);
         TemporalAccessor parse = dateTimeFormatter.parse(userInput);
         LocalDate localDate = LocalDate.from(parse);
