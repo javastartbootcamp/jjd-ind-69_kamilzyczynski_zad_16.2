@@ -30,10 +30,7 @@ public class Main {
             }
 
             if (userDateZoned == null) {
-                try {
-                    userDateZoned = getLocalizedDataTime(userInput);
-
-                } catch (DateTimeParseException ex) { }
+                userDateZoned = getLocalizedDataTime(userInput);
             }
             if (userDateZoned == null) {
                 System.out.println("Wprowadzono datę w złym formacie. Spróbuj raz jeszcze.");
@@ -45,18 +42,15 @@ public class Main {
 
     private static ZonedDateTime getLocalizedDataTime(String userInput) {
         List<String> availablePatternsWithTime = Arrays.asList("yyyy-MM-dd HH:mm:ss", "dd.MM.yyyy HH:mm:ss");
-        ZoneId localDateZone = ZoneId.systemDefault();
-        LocalDateTime userDate = null;
         for (String availablePattern : availablePatternsWithTime) {
             try {
                 DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern(availablePattern);
                 TemporalAccessor parse = dateTimeFormatter.parse(userInput);
-                userDate = LocalDateTime.from(parse);
-                break;
-            } catch (DateTimeParseException ex) {
+                return LocalDateTime.from(parse).atZone(ZoneId.systemDefault());
+            } catch (DateTimeParseException ignored) {
             }
         }
-        return userDate.atZone(localDateZone);
+        return null;
     }
 
     private static ZonedDateTime getLocalizedDate(String userInput) {
